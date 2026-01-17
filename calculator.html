@@ -404,8 +404,8 @@
     <nav class="topNav reveal">
       <a class="brand" href="https://clarabollengandolfo.github.io/">Clara Bollen Gandolfo</a>
       <div class="navActions">
-        <a class="navLink primary" href="calculator.html">Income-based investment calculator</a>
-        <a class="navLink" href="goal-calculator.html">Financial goal based investment calculator</a>
+        <a class="navLink primary" href="calculator.html">Income-Based Financial Planner</a>
+        <a class="navLink" href="goal-calculator.html">Financial Goal Based Financial Planner</a>
         <a class="navLink" href="articles.html">Articles</a>
         <a class="homeLink" href="index.html" aria-label="Back to landing page">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -432,7 +432,7 @@
         <button type="button" data-step="3">Portfolio setup</button>
         <button type="button" data-step="4">Income path</button>
         <button type="button" data-step="5">Monthly leftover</button>
-        <button type="button" data-step="6">Contrib + withdrawals</button>
+        <button type="button" data-step="6">Contributions + withdrawals</button>
         <button type="button" data-step="7">Return graph</button>
       </nav>
 
@@ -487,7 +487,7 @@
             </div>
             <div class="flowStep">
               <span class="flowIndex">06</span>
-              <span class="flowLabel">Contrib + withdrawals</span>
+              <span class="flowLabel">Contributions + withdrawals</span>
               <span class="flowDesc">Translate milestones into contribution phases and planned withdrawals.</span>
             </div>
             <div class="flowStep">
@@ -678,7 +678,7 @@
           </table>
           <div class="row">
             <div class="note">Add or remove contribution phases as your plan changes.</div>
-            <button id="addRow" class="secondary" type="button">Add contrib row</button>
+            <button id="addRow" class="secondary" type="button">Add contribution row</button>
           </div>
         </div>
 
@@ -769,6 +769,7 @@
             </div>
             <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
               <button id="run" type="button">Run</button>
+              <button id="downloadPlan" class="secondary" type="button">Download long-term plan (PDF)</button>
             </div>
           </div>
 
@@ -1475,7 +1476,7 @@
     }
 
     function run() {
-      if (!validateUI()) return;
+      if (!validateUI()) return false;
 
       const startingPot = Number(document.getElementById("start").value);
       const years = Math.floor(Number(document.getElementById("years").value));
@@ -1483,7 +1484,7 @@
       if (!Number.isFinite(startingPot) || startingPot < 0) {
         errorsEl.style.display = "block";
         errorsEl.textContent = "Starting pot must be a valid non-negative number.";
-        return;
+        return false;
       }
 
       const contribRows = readContribRowsWithEls();
@@ -1567,6 +1568,198 @@
           }
         }
       });
+      return true;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function tableToHTML(tableEl) {
+      if (!tableEl) return "";
+      const clone = tableEl.cloneNode(true);
+      clone.querySelectorAll("input").forEach((input) => {
+        const span = document.createElement("span");
+        span.textContent = input.value;
+        input.replaceWith(span);
+      });
+      clone.querySelectorAll("select").forEach((select) => {
+        const span = document.createElement("span");
+        const label = select.options[select.selectedIndex]?.text || select.value;
+        span.textContent = label;
+        select.replaceWith(span);
+      });
+      clone.querySelectorAll("button").forEach((btn) => btn.remove());
+      return clone.outerHTML;
+    }
+
+    function downloadPlanPDF() {
+      if (!run()) return;
+
+      requestAnimationFrame(() => {
+        const incomeImg = incomeChart ? incomeChart.toBase64Image() : "";
+        const returnImg = chart ? chart.toBase64Image() : "";
+        const grossIncome = parseMoneyInput(document.getElementById("grossIncome").value || 0);
+        const taxRegionSelect = document.getElementById("taxRegion");
+        const taxRegion = taxRegionSelect?.selectedOptions?.[0]?.text || taxRegionSelect?.value || "";
+        const rentMonthly = Number(document.getElementById("rentMonthly").value || 0);
+        const livingMonthly = Number(document.getElementById("livingMonthly").value || 0);
+        const startingPot = Number(document.getElementById("start").value || 0);
+        const horizonYears = Number(document.getElementById("years").value || 0);
+        const investPct = Number(document.getElementById("investPct").value || 0);
+
+        const detailsText = document.getElementById("incomeDetails")?.textContent || "";
+        const outputText = document.getElementById("output")?.textContent || "";
+
+        const incomeTable = tableToHTML(document.getElementById("incomeProjectionBody")?.closest("table"));
+        const contribTable = tableToHTML(document.getElementById("schedBody")?.closest("table"));
+        const withdrawalTable = tableToHTML(document.getElementById("wBody")?.closest("table"));
+
+        const summaryBad = document.getElementById("returnBad")?.textContent || "—";
+        const summaryAvg = document.getElementById("returnAverage")?.textContent || "—";
+        const summaryGood = document.getElementById("returnGood")?.textContent || "—";
+        const summaryBadDelta = document.getElementById("returnBadDelta")?.textContent || "—";
+        const summaryAvgDelta = document.getElementById("returnAverageDelta")?.textContent || "—";
+        const summaryGoodDelta = document.getElementById("returnGoodDelta")?.textContent || "—";
+        const summaryNet = document.getElementById("returnNetContrib")?.textContent || "—";
+        const summaryWithdrawn = document.getElementById("returnWithdrawn")?.textContent || "—";
+
+        const html = `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Long-Term Financial Plan</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        font-family: "Times New Roman", serif;
+        color: #1f2622;
+        margin: 32px;
+      }
+      h1 { font-size: 28px; margin: 0 0 8px; }
+      h2 { font-size: 18px; margin: 24px 0 8px; }
+      p { margin: 6px 0; font-size: 13px; line-height: 1.5; }
+      .meta { font-size: 12px; color: #5a635e; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .card {
+        border: 1px solid #d6d0c5;
+        border-radius: 10px;
+        padding: 10px;
+        background: #f7f2e9;
+        font-size: 12px;
+      }
+      .card strong { display: block; font-size: 13px; margin-bottom: 4px; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 0;
+        font-size: 12px;
+      }
+      th, td { border-bottom: 1px solid #d6d0c5; padding: 6px; text-align: left; }
+      th:last-child, td:last-child { text-align: right; }
+      .chart {
+        width: 100%;
+        border: 1px solid #d6d0c5;
+        border-radius: 12px;
+        margin-top: 10px;
+      }
+      .summaryGrid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .summaryGrid .card { background: #fff; }
+      pre {
+        font-family: "Times New Roman", serif;
+        white-space: pre-wrap;
+        font-size: 12px;
+        background: #fcfaf6;
+        padding: 10px;
+        border: 1px solid #d6d0c5;
+        border-radius: 10px;
+      }
+      @media print {
+        body { margin: 18mm; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Long-Term Financial Plan</h1>
+    <div class="meta">Generated ${escapeHtml(new Date().toLocaleString())}</div>
+
+  <h2>Current income and monthly budget</h2>
+  <div class="grid">
+    <div class="card"><strong>Annual gross income</strong>${escapeHtml(fmtMoney(grossIncome))}</div>
+    <div class="card"><strong>Tax region</strong>${escapeHtml(taxRegion)}</div>
+    <div class="card"><strong>Monthly rent</strong>${escapeHtml(fmtMoney(rentMonthly))}</div>
+    <div class="card"><strong>Living costs</strong>${escapeHtml(fmtMoney(livingMonthly))}</div>
+    <div class="card"><strong>Net annual income</strong>${escapeHtml(document.getElementById("insightNetAnnual")?.textContent || "—")}</div>
+    <div class="card"><strong>Net monthly income</strong>${escapeHtml(document.getElementById("insightNetMonthly")?.textContent || "—")}</div>
+    <div class="card"><strong>Total expenses</strong>${escapeHtml(document.getElementById("insightExpenses")?.textContent || "—")}</div>
+    <div class="card"><strong>Leftover per month</strong>${escapeHtml(document.getElementById("insightLeftover")?.textContent || "—")}</div>
+  </div>
+  <pre>${escapeHtml(detailsText)}</pre>
+
+  <h2>Portfolio setup</h2>
+  <div class="grid">
+    <div class="card"><strong>Starting pot</strong>${escapeHtml(fmtMoney(startingPot))}</div>
+    <div class="card"><strong>Projection horizon</strong>${escapeHtml(horizonYears)} years</div>
+    <div class="card"><strong>Percent of leftover to invest</strong>${escapeHtml(investPct)}%</div>
+  </div>
+
+  <h2>Projected income path</h2>
+  ${incomeImg ? `<img class="chart" src="${incomeImg}" alt="Projected income chart" />` : "<p>No income chart available.</p>"}
+
+  <h2>Monthly leftover at each point</h2>
+  ${incomeTable || "<p>No income projection table available.</p>"}
+
+  <h2>Monthly contribution schedule</h2>
+  ${contribTable || "<p>No contribution schedule available.</p>"}
+
+  <h2>Lump sum withdrawals</h2>
+  ${withdrawalTable || "<p>No withdrawal schedule available.</p>"}
+
+  <h2>Return projections</h2>
+  <div class="summaryGrid">
+    <div class="card"><strong>Good market return</strong>${escapeHtml(summaryGood)}</div>
+    <div class="card"><strong>Average market return</strong>${escapeHtml(summaryAvg)}</div>
+    <div class="card"><strong>Poor market return</strong>${escapeHtml(summaryBad)}</div>
+    <div class="card"><strong>Net contributed</strong>${escapeHtml(summaryNet)}</div>
+    <div class="card"><strong>Good market delta</strong>${escapeHtml(summaryGoodDelta)}</div>
+    <div class="card"><strong>Average market delta</strong>${escapeHtml(summaryAvgDelta)}</div>
+    <div class="card"><strong>Poor market delta</strong>${escapeHtml(summaryBadDelta)}</div>
+    <div class="card"><strong>Total withdrawn</strong>${escapeHtml(summaryWithdrawn)}</div>
+  </div>
+  <pre>${escapeHtml(outputText)}</pre>
+  ${returnImg ? `<img class="chart" src="${returnImg}" alt="Return projection chart" />` : "<p>No return chart available.</p>"}
+  </body>
+</html>
+        `;
+        const win = window.open("", "_blank");
+        if (!win) {
+          alert("Please allow popups to download the PDF.");
+          return;
+        }
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.onload = () => {
+          win.print();
+        };
+      });
     }
 
     // ---------- Wire up ----------
@@ -1585,6 +1778,7 @@
     });
 
     document.getElementById("run").addEventListener("click", run);
+    document.getElementById("downloadPlan").addEventListener("click", downloadPlanPDF);
     document.getElementById("years").addEventListener("input", () => {
       validateUI();
       rebuildIncomeChart();
