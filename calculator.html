@@ -1319,8 +1319,7 @@
       const base = parseMoneyInput(document.getElementById("grossIncome").value) || 29000;
       const years = Math.floor(Number(document.getElementById("years").value) || 30);
       const nextPoints = seedIncomePoints(base, years);
-      const currentMax = incomeChart?.options?.scales?.y?.max ?? 0;
-      const yMax = Math.max(1, Math.round(base * 5), currentMax);
+      const yMax = Math.max(1, Math.round(base * 5));
 
       if (lastIncomeBase === base) {
         const prevByYear = new Map(incomePoints.map(p => [p.x, p.y]));
@@ -1356,7 +1355,7 @@
       if (index === 0) {
         const base = parseMoneyInput(document.getElementById("grossIncome").value);
         if (Number.isFinite(base)) {
-          currentMax = Math.min(2000000, Math.max(currentMax, Math.round(base * 5)));
+          currentMax = Math.min(2000000, Math.round(base * 5));
           if (incomeChart) {
             incomeChart.options.scales.y.max = currentMax;
           }
