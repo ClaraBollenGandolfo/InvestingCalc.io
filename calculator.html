@@ -76,6 +76,7 @@
     td:last-child, th:last-child { text-align: right; }
 
     .chartWrap { margin-top: 12px; height: 320px; }
+    .incomeChartWrap { margin-top: 12px; height: 340px; }
     canvas { width: 100% !important; height: 100% !important; background: #fcfaf6; border: 1px solid var(--border); border-radius: 14px; }
 
     .errorBox {
@@ -100,6 +101,7 @@
       .row { grid-template-columns: 1fr; }
       button { width: 100%; }
       .chartWrap { height: 260px; }
+      .incomeChartWrap { height: 260px; }
     }
   </style>
 </head>
@@ -164,6 +166,34 @@
           <div>
             <label for="years">Projection (years)</label>
             <input id="years" type="number" min="1" step="1" value="30" />
+          </div>
+        </div>
+      </div>
+
+      <!-- INCOME PROJECTION -->
+      <div class="section">
+        <div class="sectionTitle">Projected income path</div>
+        <div class="tiny">
+          Drag the dots (every 5 years) to sketch your future gross salary. The chart runs from 0-200,000 GBP.
+        </div>
+        <div class="incomeChartWrap"><canvas id="incomeChart"></canvas></div>
+
+        <div class="panel">
+          <div class="sectionTitle" style="margin-bottom: 10px;">Monthly leftover at each point</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 18%;">Year</th>
+                <th>Gross annual</th>
+                <th>Net monthly</th>
+                <th>Leftover monthly</th>
+              </tr>
+            </thead>
+            <tbody id="incomeProjectionBody"></tbody>
+          </table>
+          <div class="row" style="margin-top: 12px;">
+            <div class="note">Use your projected leftover to fill the contribution schedule.</div>
+            <button id="applyIncomeToContrib" type="button">Auto-fill contribution schedule</button>
           </div>
         </div>
       </div>
@@ -508,6 +538,146 @@
     const rootStyles = getComputedStyle(document.documentElement);
     const chartText = rootStyles.getPropertyValue("--chart-text").trim() || "#1f2622";
     const chartTextMuted = rootStyles.getPropertyValue("--chart-text-muted").trim() || "#5a635e";
+    const incomeYears = [0, 5, 10, 15, 20, 25, 30];
+    const incomeBody = document.getElementById("incomeProjectionBody");
+    const incomeCanvas = document.getElementById("incomeChart");
+    let incomeChart = null;
+    let incomePoints = [];
+    let incomeDragIndex = null;
+
+    function seedIncomePoints(base) {
+      return incomeYears.map((y) => ({
+        x: y,
+        y: clamp(Math.round(base * Math.pow(1.03, y)), 0, 200000)
+      }));
+    }
+
+    function updateIncomeProjectionTable() {
+      const rent = Number(document.getElementById("rentMonthly").value);
+      const living = Number(document.getElementById("livingMonthly").value);
+      const expensesMonthly = rent + living;
+
+      incomeBody.innerHTML = "";
+
+      incomePoints.forEach((p) => {
+        const { net } = calcNetIncome(p.y, document.getElementById("taxRegion").value);
+        const netMonthly = net / 12;
+        const leftover = netMonthly - expensesMonthly;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${p.x}</td>
+          <td>${fmtMoney(p.y)}</td>
+          <td>${fmtMoney(netMonthly)}</td>
+          <td>${fmtMoney(leftover)}</td>
+        `;
+        incomeBody.appendChild(row);
+      });
+    }
+
+    function initIncomeChart() {
+      const base = Number(document.getElementById("grossIncome").value) || 60000;
+      incomePoints = seedIncomePoints(base);
+
+      incomeChart = new Chart(incomeCanvas, {
+        type: "line",
+        data: {
+          datasets: [{
+            label: "Projected gross income",
+            data: incomePoints,
+            borderWidth: 2,
+            borderColor: "#1f5b3f",
+            pointBackgroundColor: "#1f5b3f",
+            pointBorderColor: "#143f2b",
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.2
+          }]
+        },
+        options: {
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: chartText } }
+          },
+          scales: {
+            x: {
+              type: "linear",
+              min: 0,
+              max: 30,
+              ticks: { color: chartTextMuted, stepSize: 5 },
+              title: { display: true, text: "Years", color: chartText }
+            },
+            y: {
+              min: 0,
+              max: 200000,
+              ticks: { color: chartTextMuted, callback: (v) => fmtMoney(v) },
+              title: { display: true, text: "Gross annual income (GBP)", color: chartText }
+            }
+          }
+        }
+      });
+
+      updateIncomeProjectionTable();
+    }
+
+    function setIncomePoint(index, value) {
+      const clamped = clamp(Math.round(value), 0, 200000);
+      incomePoints[index].y = clamped;
+
+      if (index === 0) {
+        const grossInput = document.getElementById("grossIncome");
+        grossInput.value = clamped;
+        renderIncome();
+      }
+
+      if (incomeChart) {
+        incomeChart.update("none");
+      }
+      updateIncomeProjectionTable();
+    }
+
+    function monthlyLeftoverForGross(grossAnnual) {
+      const rent = Number(document.getElementById("rentMonthly").value);
+      const living = Number(document.getElementById("livingMonthly").value);
+      const { net } = calcNetIncome(grossAnnual, document.getElementById("taxRegion").value);
+      return (net / 12) - (rent + living);
+    }
+
+    function applyIncomeToContribSchedule() {
+      const years = Math.floor(Number(document.getElementById("years").value) || 30);
+      const tbody = document.getElementById("schedBody");
+      tbody.innerHTML = "";
+
+      for (let i = 0; i < incomePoints.length - 1; i++) {
+        const from = incomePoints[i].x;
+        const to = incomePoints[i + 1].x;
+        if (from >= years) break;
+        const cappedTo = Math.min(to, years);
+        const leftover = monthlyLeftoverForGross(incomePoints[i].y);
+        const monthly = Math.max(0, Math.round(leftover));
+        addContribRow(from, cappedTo, monthly);
+      }
+    }
+
+    function handleIncomePointerDown(evt) {
+      const points = incomeChart.getElementsAtEventForMode(evt, "nearest", { intersect: true }, true);
+      if (!points.length) return;
+      const idx = points[0].index;
+      if (idx == null) return;
+      incomeDragIndex = idx;
+    }
+
+    function handleIncomePointerMove(evt) {
+      if (incomeDragIndex == null) return;
+      const yVal = incomeChart.scales.y.getValueForPixel(evt.offsetY);
+      setIncomePoint(incomeDragIndex, yVal);
+    }
+
+    function handleIncomePointerUp() {
+      incomeDragIndex = null;
+    }
 
     function validateUI() {
       const years = Math.floor(Number(document.getElementById("years").value));
@@ -630,10 +800,28 @@
     document.getElementById("years").addEventListener("input", validateUI);
 
     document.getElementById("calcIncome").addEventListener("click", renderIncome);
-    document.getElementById("grossIncome").addEventListener("input", renderIncome);
-    document.getElementById("taxRegion").addEventListener("change", renderIncome);
-    document.getElementById("rentMonthly").addEventListener("input", renderIncome);
-    document.getElementById("livingMonthly").addEventListener("input", renderIncome);
+    document.getElementById("grossIncome").addEventListener("input", () => {
+      renderIncome();
+      if (incomePoints.length) setIncomePoint(0, Number(document.getElementById("grossIncome").value));
+    });
+    document.getElementById("rentMonthly").addEventListener("input", () => {
+      renderIncome();
+      updateIncomeProjectionTable();
+    });
+    document.getElementById("livingMonthly").addEventListener("input", () => {
+      renderIncome();
+      updateIncomeProjectionTable();
+    });
+    document.getElementById("taxRegion").addEventListener("change", () => {
+      renderIncome();
+      updateIncomeProjectionTable();
+    });
+
+    incomeCanvas.addEventListener("pointerdown", handleIncomePointerDown);
+    incomeCanvas.addEventListener("pointermove", handleIncomePointerMove);
+    incomeCanvas.addEventListener("pointerup", handleIncomePointerUp);
+    incomeCanvas.addEventListener("pointerleave", handleIncomePointerUp);
+    document.getElementById("applyIncomeToContrib").addEventListener("click", applyIncomeToContribSchedule);
 
     // Defaults
     addContribRow(0, 3, 800);
@@ -644,6 +832,7 @@
     addWithdrawalRow(7, 50000);
 
     renderIncome();
+    initIncomeChart();
     validateUI();
     run();
   </script>
