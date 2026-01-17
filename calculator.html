@@ -381,7 +381,7 @@
             <div>
             <label for="grossIncome">Annual gross income</label>
             <span class="moneyFieldWrap">
-              <input id="grossIncome" type="number" min="0" step="500" value="60000" />
+              <input id="grossIncome" type="number" min="0" step="500" value="29000" />
             </span>
             </div>
             <div>
@@ -397,7 +397,7 @@
             <div>
             <label for="rentMonthly">Monthly rent</label>
             <span class="moneyFieldWrap">
-              <input id="rentMonthly" type="number" min="0" step="50" value="1500" />
+              <input id="rentMonthly" type="number" min="0" step="50" value="1000" />
             </span>
             </div>
             <div>
@@ -1097,7 +1097,7 @@
     }
 
     function initIncomeChart() {
-      const base = Number(document.getElementById("grossIncome").value) || 60000;
+      const base = Number(document.getElementById("grossIncome").value) || 29000;
       const years = Math.floor(Number(document.getElementById("years").value) || 30);
       incomePoints = seedIncomePoints(base, years);
       const yMax = Math.max(1, Math.round(base * 5));
@@ -1146,7 +1146,7 @@
     }
 
     function rebuildIncomeChart() {
-      const base = Number(document.getElementById("grossIncome").value) || 60000;
+      const base = Number(document.getElementById("grossIncome").value) || 29000;
       const years = Math.floor(Number(document.getElementById("years").value) || 30);
       const nextPoints = seedIncomePoints(base, years);
       const yMax = Math.max(1, Math.round(base * 5));
