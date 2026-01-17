@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Investment Growth Planner</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
       font-family: "Avenir Next", "Avenir", "Futura", "Trebuchet MS", sans-serif;
@@ -158,6 +160,60 @@
       font-size: 12px;
       letter-spacing: 2px;
     }
+    .preview {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: center;
+    }
+    .previewCopy {
+      display: grid;
+      gap: 12px;
+    }
+    .previewCopy strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .previewCard {
+      background: rgba(251, 248, 241, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 16px 30px rgba(31, 38, 34, 0.08);
+    }
+    .previewTitle {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .previewCanvas {
+      width: 100% !important;
+      height: 260px !important;
+      background: #fcfaf6;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .previewCta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      font-size: 14px;
+      box-shadow: 0 12px 22px rgba(47, 107, 79, 0.24);
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+      justify-self: end;
+    }
+    .previewCta:hover { transform: translateY(-2px); background: var(--accent-strong); }
     .eyebrow {
       text-transform: uppercase;
       font-size: 12px;
@@ -264,6 +320,7 @@
       .hero { grid-template-columns: 1fr; }
       .stats { grid-template-columns: 1fr; }
       .reviewGrid { grid-template-columns: 1fr; }
+      .preview { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -350,6 +407,165 @@
         </article>
       </div>
     </section>
+
+    <section class="preview">
+      <div class="previewCopy">
+        <div class="reviewsHeader">Returns preview</div>
+        <p class="reviewQuote" style="margin-top: 8px;">
+          Wondering how to reach your <strong>financial goals</strong> — or how much more your money could do
+          in the <strong>right market</strong> over time? A disciplined plan can turn an average UK salary into
+          meaningful long‑term outcomes, including the potential to retire with <strong>seven figures</strong>.
+          Use the income‑based calculator to model the path, pressure‑test assumptions, and build a plan
+          you can actually maintain. Set your income, expenses, and contribution intent, then explore how
+          steady investing, delayed starts, or big withdrawals change the outcome. It is a fast way to
+          replace vague “what if” thinking with an informed, numbers‑backed roadmap you can refine over
+          time. Think of it as a decision‑support view: not a promise, but a way to see the shape of the
+          journey, the role of patience, and the power of consistent habits. If you want a clearer story
+          than a spreadsheet can tell, this is the place to start.
+        </p>
+        <a class="previewCta" href="calculator.html">Try the income‑based calculator</a>
+      </div>
+      <div class="previewCard">
+        <div class="previewTitle">Sample projection</div>
+        <canvas id="previewChart" class="previewCanvas" aria-label="Preview chart of projected returns"></canvas>
+      </div>
+    </section>
   </div>
+  <script>
+    const previewScenarios = [
+      { name: "Bad (3%/yr)", annual: 0.03, color: "#3f8dd5" },
+      { name: "Average (7%/yr)", annual: 0.07, color: "#d65b7a" },
+      { name: "Good (10%/yr)", annual: 0.10, color: "#d28945" },
+    ];
+
+    function annualToMonthlyRate(annualReturn) {
+      return Math.pow(1 + annualReturn, 1/12) - 1;
+    }
+
+    function fmtMoney(x) {
+      const n = Number(x);
+      if (!Number.isFinite(n)) return "£0";
+      return "£" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
+    function fmtCompact(x) {
+      const ax = Math.abs(x);
+      if (ax >= 1e9) return "£" + (x/1e9).toFixed(1) + "b";
+      if (ax >= 1e6) return "£" + (x/1e6).toFixed(1) + "m";
+      if (ax >= 1e3) return "£" + (x/1e3).toFixed(1) + "k";
+      return "£" + String(Math.round(x));
+    }
+
+    function buildContribByMonth(contribRows, years) {
+      const months = years * 12;
+      const contribByMonth = new Array(months).fill(0);
+      const sorted = contribRows
+        .map(r => ({ from: r.from, to: r.to, monthly: r.monthly }))
+        .sort((a, b) => a.from - b.from);
+      for (const s of sorted) {
+        const startM = s.from * 12;
+        const endM = s.to * 12;
+        for (let m = startM; m < endM; m++) contribByMonth[m] = s.monthly;
+      }
+      return contribByMonth;
+    }
+
+    function buildWithdrawalsByYearEnd(wRows, years) {
+      const arr = new Array(years + 1).fill(0);
+      for (const r of wRows) arr[r.year] += r.amount;
+      return arr;
+    }
+
+    function simulateYearly(startingPot, contribByMonth, withdrawalsByYearEnd, annualReturn, years) {
+      const months = years * 12;
+      const r = annualToMonthlyRate(annualReturn);
+      let v = startingPot;
+      v -= (withdrawalsByYearEnd[0] ?? 0);
+      const yearly = [v];
+      for (let m = 1; m <= months; m++) {
+        const c = contribByMonth[m - 1] ?? 0;
+        v = v * (1 + r) + c;
+        if (m % 12 === 0) {
+          const year = m / 12;
+          v -= (withdrawalsByYearEnd[year] ?? 0);
+          yearly.push(v);
+        }
+      }
+      return yearly;
+    }
+
+    function contributedNetYearly(startingPot, contribByMonth, withdrawalsByYearEnd, years) {
+      const months = years * 12;
+      let total = startingPot - (withdrawalsByYearEnd[0] ?? 0);
+      const yearly = [total];
+      for (let m = 1; m <= months; m++) {
+        total += (contribByMonth[m - 1] ?? 0);
+        if (m % 12 === 0) {
+          const year = m / 12;
+          total -= (withdrawalsByYearEnd[year] ?? 0);
+          yearly.push(total);
+        }
+      }
+      return yearly;
+    }
+
+    const previewDefaults = {
+      start: 10000,
+      years: 30,
+      contrib: [
+        { from: 0, to: 3, monthly: 800 },
+        { from: 3, to: 10, monthly: 1100 },
+        { from: 10, to: 20, monthly: 2000 },
+        { from: 20, to: 30, monthly: 2000 },
+      ],
+      withdrawals: [{ year: 7, amount: 50000 }]
+    };
+
+    const contribByMonth = buildContribByMonth(previewDefaults.contrib, previewDefaults.years);
+    const withdrawalsByYearEnd = buildWithdrawalsByYearEnd(previewDefaults.withdrawals, previewDefaults.years);
+    const labels = Array.from({ length: previewDefaults.years + 1 }, (_, y) => y);
+    const netContribYearly = contributedNetYearly(previewDefaults.start, contribByMonth, withdrawalsByYearEnd, previewDefaults.years);
+
+    const datasets = previewScenarios.map(s => ({
+      label: s.name,
+      data: simulateYearly(previewDefaults.start, contribByMonth, withdrawalsByYearEnd, s.annual, previewDefaults.years),
+      borderWidth: 2,
+      pointRadius: 0,
+      borderColor: s.color,
+      tension: 0.15
+    }));
+
+    datasets.push({
+      label: "Net Contributed (after withdrawals)",
+      data: netContribYearly,
+      borderWidth: 2,
+      pointRadius: 0,
+      borderDash: [8, 6],
+      borderColor: "#8c9c90",
+      tension: 0.0
+    });
+
+    const previewCtx = document.getElementById("previewChart");
+    if (previewCtx) {
+      new Chart(previewCtx, {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { labels: { color: "#4d5a54" } },
+            tooltip: { callbacks: { label: (item) => `${item.dataset.label}: ${fmtMoney(item.parsed.y)}` } }
+          },
+          scales: {
+            x: { title: { display: true, text: "Years", color: "#4d5a54" }, ticks: { color: "#4d5a54" } },
+            y: { title: { display: true, text: "Value", color: "#4d5a54" }, ticks: { color: "#4d5a54", callback: (v) => fmtCompact(v) } }
+          }
+        }
+      });
+    }
+  </script>
 </body>
 </html>
