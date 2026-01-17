@@ -64,8 +64,64 @@
       background: rgba(251, 248, 241, 0.9);
       box-shadow: 0 14px 28px rgba(31, 38, 34, 0.08);
     }
+    .topNav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(251, 248, 241, 0.85);
+      box-shadow: 0 10px 22px rgba(31, 38, 34, 0.08);
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 1.2px;
+      text-decoration: none;
+    }
+    .navActions {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .navLink {
+      text-decoration: none;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      transition: background 150ms ease, color 150ms ease, border 150ms ease;
+    }
+    .navLink:hover { color: var(--ink); border-color: var(--border); background: #f7f2e9; }
+    .navLink.primary { background: rgba(47, 107, 79, 0.12); color: var(--accent-strong); border-color: var(--border); }
     .appTitle { font-size: 20px; margin: 0 0 6px; font-weight: 700; letter-spacing: 0.2px; }
     .appIntro { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+    .homeLink {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: rgba(47, 107, 79, 0.12);
+      color: var(--accent-strong);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: transform 150ms ease, background 150ms ease;
+      margin-left: auto;
+    }
+    .homeLink:hover { transform: translateY(-1px); background: rgba(47, 107, 79, 0.2); }
+    .homeLink svg { width: 22px; height: 22px; }
 
     .layout { display: grid; grid-template-columns: 180px 1fr; gap: 18px; align-items: start; }
     .toc {
@@ -212,6 +268,20 @@
 </head>
 <body>
   <div class="wrap">
+    <nav class="topNav">
+      <a class="brand" href="https://clarabollengandolfo.github.io/">Clara Bollen Gandolfo</a>
+      <div class="navActions">
+        <a class="navLink primary" href="calculator.html">Income-based investment calculator</a>
+        <a class="navLink" href="goal-calculator.html">Financial goal based investment calculator</a>
+        <a class="navLink" href="articles.html">Articles</a>
+        <a class="homeLink" href="index.html" aria-label="Back to landing page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 10.5L12 3l9 7.5" />
+            <path d="M6.5 10.5V21h11V10.5" />
+          </svg>
+        </a>
+      </div>
+    </nav>
     <div class="appHeader">
       <h2 class="appTitle">Investment Growth Projection</h2>
       <p class="appIntro">

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Financial Goal Based Investment Calculator</title>
+  <style>
+    :root {
+      font-family: "Avenir Next", "Avenir", "Futura", "Trebuchet MS", sans-serif;
+      color-scheme: light;
+      --bg: #f7f2e8;
+      --bg-deep: #eef5ee;
+      --ink: #1f2622;
+      --muted: #4d5a54;
+      --border: #d6cdc1;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, var(--bg) 0%, var(--bg-deep) 40%, #f5efe5 100%);
+      color: var(--ink);
+    }
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -20% -10%;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(92, 158, 120, 0.28) 0%, rgba(92, 158, 120, 0) 42%),
+        radial-gradient(circle at 30% 70%, rgba(178, 142, 98, 0.28) 0%, rgba(178, 142, 98, 0) 46%),
+        radial-gradient(circle at 70% 35%, rgba(200, 127, 86, 0.28) 0%, rgba(200, 127, 86, 0) 40%),
+        radial-gradient(circle at 85% 80%, rgba(120, 168, 116, 0.24) 0%, rgba(120, 168, 116, 0) 45%);
+      animation: floatBlobs 22s ease-in-out infinite;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+    body::after {
+      animation-duration: 30s;
+      animation-direction: reverse;
+      opacity: 0.65;
+      filter: blur(2px);
+    }
+    @keyframes floatBlobs {
+      0% { transform: translate3d(-2%, -1%, 0) scale(1); }
+      50% { transform: translate3d(2%, 2%, 0) scale(1.05); }
+      100% { transform: translate3d(-2%, -1%, 0) scale(1); }
+    }
+    .wrap { max-width: none; width: 100%; margin: 0; padding: 48px 32px 64px; box-sizing: border-box; }
+    .topNav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(251, 248, 241, 0.85);
+      box-shadow: 0 10px 22px rgba(31, 38, 34, 0.08);
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 1.2px;
+      text-decoration: none;
+    }
+    .navActions {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .navLink {
+      text-decoration: none;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      transition: background 150ms ease, color 150ms ease, border 150ms ease;
+    }
+    .navLink:hover { color: var(--ink); border-color: var(--border); background: #f7f2e9; }
+    .navLink.primary { background: rgba(47, 107, 79, 0.12); color: #23543d; border-color: var(--border); }
+    .homeLink {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: rgba(47, 107, 79, 0.12);
+      color: #23543d;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: transform 150ms ease, background 150ms ease;
+    }
+    .homeLink:hover { transform: translateY(-1px); background: rgba(47, 107, 79, 0.2); }
+    .homeLink svg { width: 22px; height: 22px; }
+    .card {
+      background: rgba(251, 248, 241, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 16px 30px rgba(31, 38, 34, 0.08);
+      max-width: 640px;
+    }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    p { margin: 0; color: var(--muted); line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="topNav">
+      <a class="brand" href="https://clarabollengandolfo.github.io/">Clara Bollen Gandolfo</a>
+      <div class="navActions">
+        <a class="navLink" href="calculator.html">Income-based investment calculator</a>
+        <a class="navLink primary" href="goal-calculator.html">Financial goal based investment calculator</a>
+        <a class="navLink" href="articles.html">Articles</a>
+        <a class="homeLink" href="index.html" aria-label="Back to landing page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 10.5L12 3l9 7.5" />
+            <path d="M6.5 10.5V21h11V10.5" />
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+    <div class="card">
+      <h1>Financial Goal Based Investment Calculator</h1>
+      <p>This page is a placeholder for the upcoming goal-based calculator.</p>
+    </div>
+  </div>
+</body>
+</html>
