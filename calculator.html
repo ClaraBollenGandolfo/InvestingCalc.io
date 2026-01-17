@@ -794,6 +794,7 @@
     }
 
     let scrollTicking = false;
+    let scrollSnapTimer = null;
     function handleScroll() {
       if (scrollTicking) return;
       scrollTicking = true;
@@ -812,6 +813,17 @@
         }
         scrollTicking = false;
       });
+
+      if (scrollSnapTimer) clearTimeout(scrollSnapTimer);
+      scrollSnapTimer = setTimeout(() => {
+        const rect = carouselScroll.getBoundingClientRect();
+        const usable = rect.height - window.innerHeight;
+        if (usable <= 0) return;
+        const start = carouselScroll.offsetTop;
+        const progress = clamp((window.scrollY - start) / usable, 0, 1);
+        const targetIndex = Math.round(progress * (carouselCards.length - 1));
+        scrollToCarouselIndex(targetIndex);
+      }, 100);
     }
 
     function seedIncomePoints(base) {
