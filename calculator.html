@@ -106,6 +106,11 @@
     .navLink.primary { background: rgba(47, 107, 79, 0.12); color: var(--accent-strong); border-color: var(--border); }
     .appTitle { font-size: 20px; margin: 0 0 6px; font-weight: 700; letter-spacing: 0.2px; }
     .appIntro { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+    .reveal { opacity: 0; transform: translateY(12px); animation: fadeUp 700ms ease forwards; }
+    .reveal.delay-1 { animation-delay: 120ms; }
+    .reveal.delay-2 { animation-delay: 240ms; }
+    .reveal.delay-3 { animation-delay: 360ms; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
     .homeLink {
       width: 40px;
       height: 40px;
@@ -396,7 +401,7 @@
 </head>
 <body>
   <div class="wrap">
-    <nav class="topNav">
+    <nav class="topNav reveal">
       <a class="brand" href="https://clarabollengandolfo.github.io/">Clara Bollen Gandolfo</a>
       <div class="navActions">
         <a class="navLink primary" href="calculator.html">Income-based investment calculator</a>
@@ -410,7 +415,7 @@
         </a>
       </div>
     </nav>
-    <div class="appHeader">
+    <div class="appHeader reveal delay-1">
       <h2 class="appTitle">Investment Growth Projection</h2>
       <p class="appIntro">
         Map your future income, estimate take-home pay, and test how different monthly contribution
@@ -420,7 +425,7 @@
     </div>
 
     <div class="layout">
-      <nav class="toc" id="toc">
+      <nav class="toc reveal delay-2" id="toc">
         <button type="button" data-step="0">Overview</button>
         <button type="button" data-step="1">Income + budget</button>
         <button type="button" data-step="2">Current income insights</button>
@@ -431,7 +436,7 @@
         <button type="button" data-step="7">Return graph</button>
       </nav>
 
-      <div class="carouselScroll" id="carouselScroll">
+      <div class="carouselScroll reveal delay-3" id="carouselScroll">
         <div class="carouselStage" id="carouselStage">
       <div class="carouselCard" data-step="0">
         <div class="tabScroll">

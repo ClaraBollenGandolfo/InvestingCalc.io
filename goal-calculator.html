@@ -86,6 +86,10 @@
     }
     .navLink:hover { color: var(--ink); border-color: var(--border); background: #f7f2e9; }
     .navLink.primary { background: rgba(47, 107, 79, 0.12); color: #23543d; border-color: var(--border); }
+    .reveal { opacity: 0; transform: translateY(12px); animation: fadeUp 700ms ease forwards; }
+    .reveal.delay-1 { animation-delay: 120ms; }
+    .reveal.delay-2 { animation-delay: 240ms; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
     .homeLink {
       width: 40px;
       height: 40px;
@@ -115,7 +119,7 @@
 </head>
 <body>
   <div class="wrap">
-    <nav class="topNav">
+    <nav class="topNav reveal">
       <a class="brand" href="https://clarabollengandolfo.github.io/">Clara Bollen Gandolfo</a>
       <div class="navActions">
         <a class="navLink" href="calculator.html">Income-based investment calculator</a>
@@ -130,7 +134,7 @@
       </div>
     </nav>
 
-    <div class="card">
+    <div class="card reveal delay-1">
       <h1>Financial Goal Based Investment Calculator</h1>
       <p>This page is a placeholder for the upcoming goal-based calculator.</p>
     </div>
