@@ -830,7 +830,7 @@
     }
 
     // ---------- Validation ----------
-    function validateAll(contribRows, wRows, years) {
+    function validateAll(contribRows, wRows, years, startingPot, contribByMonth, withdrawalsByYearEnd) {
       const errors = [];
       contribRows.forEach(r => r.tr.classList.remove("badRow"));
       wRows.forEach(r => r.tr.classList.remove("badRow"));
@@ -858,6 +858,40 @@
         if (r.year < 0 || r.year > years) { errors.push(`Withdrawal row ${rowNum}: year must be between 0 and ${years}.`); r.tr.classList.add("badRow"); }
         if (r.amount < 0) { errors.push(`Withdrawal row ${rowNum}: withdrawal amount cannot be negative.`); r.tr.classList.add("badRow"); }
       });
+
+      if (Number.isFinite(startingPot) && startingPot >= 0 && Array.isArray(contribByMonth) && Array.isArray(withdrawalsByYearEnd)) {
+        const contribByYear = new Array(years + 1).fill(0);
+        for (let y = 0; y < years; y++) {
+          let sum = 0;
+          const startM = y * 12;
+          for (let m = startM; m < startM + 12; m++) sum += (contribByMonth[m] ?? 0);
+          contribByYear[y] = sum;
+        }
+
+        const cumulativeContrib = new Array(years + 1).fill(0);
+        for (let y = 1; y <= years; y++) {
+          cumulativeContrib[y] = cumulativeContrib[y - 1] + (contribByYear[y] ?? 0);
+        }
+
+        let priorWithdrawals = 0;
+        for (let y = 0; y <= years; y++) {
+          const requested = withdrawalsByYearEnd[y] ?? 0;
+          if (requested <= 0) {
+            priorWithdrawals += requested;
+            continue;
+          }
+          const available = (y === 0)
+            ? startingPot
+            : startingPot + cumulativeContrib[y] - priorWithdrawals;
+
+          if (requested > available) {
+            const rowsThisYear = wRows.filter(r => r.year === y);
+            rowsThisYear.forEach(r => r.tr.classList.add("badRow"));
+            errors.push(`Withdrawal year ${y}: requested ${fmtMoney(requested)} exceeds available ${fmtMoney(available)}.`);
+          }
+          priorWithdrawals += requested;
+        }
+      }
 
       return { ok: errors.length === 0, errors };
     }
@@ -1229,10 +1263,13 @@
 
     function validateUI() {
       const years = Math.floor(Number(document.getElementById("years").value));
+      const startingPot = Number(document.getElementById("start").value);
       const contribRows = readContribRowsWithEls();
       const wRows = readWithdrawalRowsWithEls();
+      const contribByMonth = buildContribByMonth(contribRows, years);
+      const withdrawalsByYearEnd = buildWithdrawalsByYearEnd(wRows, years);
 
-      const v = validateAll(contribRows, wRows, years);
+      const v = validateAll(contribRows, wRows, years, startingPot, contribByMonth, withdrawalsByYearEnd);
 
       if (!v.ok) {
         errorsEl.style.display = "block";
