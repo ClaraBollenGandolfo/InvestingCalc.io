@@ -186,12 +186,12 @@
     .section { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
     .section:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
 
-    .sectionTitle { font-size: 13px; color: var(--muted); margin: 0 0 6px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; }
-    .tiny { font-size: 12px; color: var(--muted); margin: 0 0 8px; line-height: 1.35; }
+    .sectionTitle { font-size: 16px; color: var(--muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; }
+    .tiny { font-size: 16px; color: var(--muted); margin: 0 0 10px; line-height: 1.4; }
 
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .grid.triple { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+    label { font-size: 14px; color: var(--muted); display: block; margin-bottom: 6px; }
     input, select {
       width: 100%;
       padding: 10px 12px;
@@ -227,8 +227,8 @@
     button.danger { background: var(--danger); }
 
     .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; margin-top: 10px; }
-    .note { font-size: 12px; color: var(--muted); line-height: 1.35; }
-    .out { margin-top: 10px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+    .note { font-size: 16px; color: var(--muted); line-height: 1.5; }
+    .out { margin-top: 10px; font-size: 16px; line-height: 1.6; white-space: pre-wrap; }
 
     .panel {
       background: var(--soft);
@@ -266,7 +266,7 @@
       padding: 10px 12px;
     }
     .insightLabel {
-      font-size: 11px;
+      font-size: 12px;
       letter-spacing: 1.2px;
       text-transform: uppercase;
       color: var(--muted);
@@ -274,7 +274,7 @@
       font-weight: 700;
     }
     .insightValue {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--ink);
     }
@@ -282,15 +282,76 @@
     .guide {
       background: rgba(47, 107, 79, 0.9);
       color: #fff;
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 16px;
-      font-size: 12px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.5;
       margin: 8px 0 14px;
       box-shadow: 0 10px 20px rgba(31, 38, 34, 0.12);
       position: static;
       width: auto;
     }
+    .flowGraphic {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .flowStep {
+      background: #f7f2e9;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px 16px;
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+    .flowStep::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -18px;
+      width: 36px;
+      height: 100%;
+      background: #f7f2e9;
+      border-right: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      transform: skewX(-16deg);
+    }
+    .flowStep:last-child::after { display: none; }
+    .flowIndex {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: #efe8dc;
+      color: var(--ink);
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+    .flowStep .flowLabel {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .flowStep .flowDesc {
+      font-size: 13px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .flowStep::before { display: none; }
 
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     th, td { border-bottom: 1px solid var(--border); padding: 8px 6px; font-size: 12px; }
@@ -354,18 +415,79 @@
 
     <div class="layout">
       <nav class="toc" id="toc">
-        <button type="button" data-step="0">Income + budget</button>
-        <button type="button" data-step="1">Current income insights</button>
-        <button type="button" data-step="2">Portfolio setup</button>
-        <button type="button" data-step="3">Income path</button>
-        <button type="button" data-step="4">Monthly leftover</button>
-        <button type="button" data-step="5">Contrib + withdrawals</button>
-        <button type="button" data-step="6">Return graph</button>
+        <button type="button" data-step="0">Overview</button>
+        <button type="button" data-step="1">Income + budget</button>
+        <button type="button" data-step="2">Current income insights</button>
+        <button type="button" data-step="3">Portfolio setup</button>
+        <button type="button" data-step="4">Income path</button>
+        <button type="button" data-step="5">Monthly leftover</button>
+        <button type="button" data-step="6">Contrib + withdrawals</button>
+        <button type="button" data-step="7">Return graph</button>
       </nav>
 
       <div class="carouselScroll" id="carouselScroll">
         <div class="carouselStage" id="carouselStage">
       <div class="carouselCard" data-step="0">
+        <div class="section">
+          <div class="sectionTitle">How this works</div>
+          <p class="note" style="font-size: 15px;">
+            This calculator helps you map a realistic investment journey from today’s income to future
+            outcomes. It starts by estimating your take‑home pay using current UK tax bands, then shows
+            how rent and living costs affect what you can invest. From there, you sketch a projected income
+            path, translate that into investable monthly contributions, and test how withdrawals or big
+            expenses impact the plan.
+          </p>
+          <p class="note" style="font-size: 15px;">
+            You can model different contribution phases, set a projection horizon, and compare three
+            market return scenarios. The goal is to help you see trade‑offs early: how salary growth,
+            expenses, and contribution rates shape the long‑term outcome, and whether your plan still holds
+            up if markets are weaker than expected.
+          </p>
+          <p class="note" style="font-size: 15px;">
+            Use this as a planning canvas rather than a precise forecast. Adjust the inputs, compare the
+            scenarios, and iterate until the plan feels achievable and resilient.
+          </p>
+          <div class="flowGraphic">
+            <div class="flowStep">
+              <span class="flowIndex">01</span>
+              <span class="flowLabel">Income + budget</span>
+              <span class="flowDesc">Add salary, tax region, rent, and living costs to see your baseline cashflow.</span>
+            </div>
+            <div class="flowStep">
+              <span class="flowIndex">02</span>
+              <span class="flowLabel">Current income insights</span>
+              <span class="flowDesc">Review net pay, monthly expenses, and leftover income at a glance.</span>
+            </div>
+            <div class="flowStep">
+              <span class="flowIndex">03</span>
+              <span class="flowLabel">Portfolio setup</span>
+              <span class="flowDesc">Set your starting pot, horizon, and how much of leftover you plan to invest.</span>
+            </div>
+            <div class="flowStep">
+              <span class="flowIndex">04</span>
+              <span class="flowLabel">Income path</span>
+              <span class="flowDesc">Sketch future salary milestones to reflect realistic career growth.</span>
+            </div>
+            <div class="flowStep">
+              <span class="flowIndex">05</span>
+              <span class="flowLabel">Monthly leftover</span>
+              <span class="flowDesc">See investable cash per milestone and validate the schedule.</span>
+            </div>
+            <div class="flowStep">
+              <span class="flowIndex">06</span>
+              <span class="flowLabel">Contrib + withdrawals</span>
+              <span class="flowDesc">Translate milestones into contribution phases and planned withdrawals.</span>
+            </div>
+            <div class="flowStep">
+              <span class="flowIndex">07</span>
+              <span class="flowLabel">Return graph</span>
+              <span class="flowDesc">Compare outcomes across poor, average, and good market scenarios.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="carouselCard" data-step="1">
         <div class="section has-guide">
           <div class="sectionTitle">Income & monthly budget</div>
           <div class="guide">
@@ -381,7 +503,7 @@
             <div>
             <label for="grossIncome">Annual gross income</label>
             <span class="moneyFieldWrap">
-              <input id="grossIncome" type="number" min="0" step="500" value="29000" />
+              <input id="grossIncome" type="text" inputmode="numeric" value="29,000" />
             </span>
             </div>
             <div>
@@ -410,7 +532,7 @@
         </div>
       </div>
 
-      <div class="carouselCard" data-step="1">
+      <div class="carouselCard" data-step="2">
         <div class="section has-guide">
           <div class="sectionTitle">Insights</div>
           <div class="guide">
@@ -442,7 +564,7 @@
         </div>
       </div>
 
-      <div class="carouselCard" data-step="2">
+      <div class="carouselCard" data-step="3">
         <div class="section has-guide">
           <div class="sectionTitle">Portfolio setup</div>
           <div class="guide">
@@ -470,7 +592,7 @@
         </div>
       </div>
 
-      <div class="carouselCard" data-step="3">
+      <div class="carouselCard" data-step="4">
         <div class="section has-guide">
           <div class="sectionTitle">Projected income path</div>
           <div class="guide">
@@ -478,13 +600,13 @@
             your contribution plan later.
           </div>
           <div class="tiny">
-            Drag the dots (every 5 years) to sketch your future gross salary. The chart runs from 0-200,000 GBP.
+            Drag the dots (every 5 years) to sketch your future gross salary.
           </div>
           <div class="incomeChartWrap"><canvas id="incomeChart"></canvas></div>
         </div>
       </div>
 
-      <div class="carouselCard" data-step="4">
+      <div class="carouselCard" data-step="5">
         <div class="section has-guide">
           <div class="sectionTitle">Monthly leftover at each point</div>
           <div class="guide">
@@ -510,7 +632,7 @@
         </div>
       </div>
 
-      <div class="carouselCard" data-step="5">
+      <div class="carouselCard" data-step="6">
         <div class="section has-guide">
           <div class="sectionTitle">Monthly contribution schedule</div>
           <div class="guide">
@@ -566,7 +688,7 @@
         </div>
       </div>
 
-      <div class="carouselCard" data-step="6">
+      <div class="carouselCard" data-step="7">
         <div class="section has-guide">
           <div class="guide">
             Run the model to compare bad, average, and good return paths. Use the chart to sanity‑check
@@ -650,6 +772,18 @@
       return "£" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
     }
 
+    function parseMoneyInput(raw) {
+      if (typeof raw !== "string") return Number(raw);
+      const cleaned = raw.replace(/[^\d.-]/g, "");
+      return Number(cleaned);
+    }
+
+    function formatThousands(raw) {
+      const cleaned = raw.replace(/[^\d]/g, "");
+      if (!cleaned) return "";
+      return Number(cleaned).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
     function fmtCompact(x) {
       const ax = Math.abs(x);
       if (ax >= 1e9) return "£" + (x/1e9).toFixed(1) + "b";
@@ -723,7 +857,7 @@
     }
 
     function renderIncome() {
-      const gross = Number(document.getElementById("grossIncome").value);
+      const gross = parseMoneyInput(document.getElementById("grossIncome").value);
       const region = document.getElementById("taxRegion").value;
       const rent = Number(document.getElementById("rentMonthly").value);
       const living = Number(document.getElementById("livingMonthly").value);
@@ -973,6 +1107,7 @@
     const incomeBody = document.getElementById("incomeProjectionBody");
     const incomeCanvas = document.getElementById("incomeChart");
     let incomeChart = null;
+    let lastIncomeBase = null;
     let incomePoints = [];
     let incomeDragIndex = null;
 
@@ -1095,7 +1230,7 @@
       const cap = Math.max(0, Math.round(base * 2));
       return years.map((y) => ({
         x: y,
-        y: clamp(Math.round(base * Math.pow(1.03, y)), 0, cap)
+        y: clamp(Math.round(base + (cap - base) * (maxYears ? (y / maxYears) : 0)), 0, cap)
       }));
     }
 
@@ -1131,9 +1266,10 @@
     }
 
     function initIncomeChart() {
-      const base = Number(document.getElementById("grossIncome").value) || 29000;
+      const base = parseMoneyInput(document.getElementById("grossIncome").value) || 29000;
       const years = Math.floor(Number(document.getElementById("years").value) || 30);
       incomePoints = seedIncomePoints(base, years);
+      lastIncomeBase = base;
       const yMax = Math.max(1, Math.round(base * 5));
 
       incomeChart = new Chart(incomeCanvas, {
@@ -1180,17 +1316,21 @@
     }
 
     function rebuildIncomeChart() {
-      const base = Number(document.getElementById("grossIncome").value) || 29000;
+      const base = parseMoneyInput(document.getElementById("grossIncome").value) || 29000;
       const years = Math.floor(Number(document.getElementById("years").value) || 30);
       const nextPoints = seedIncomePoints(base, years);
-      const yMax = Math.max(1, Math.round(base * 5));
+      const currentMax = incomeChart?.options?.scales?.y?.max ?? 0;
+      const yMax = Math.max(1, Math.round(base * 5), currentMax);
 
-      const prevByYear = new Map(incomePoints.map(p => [p.x, p.y]));
-      nextPoints.forEach(p => {
-        if (prevByYear.has(p.x)) p.y = prevByYear.get(p.x);
-      });
+      if (lastIncomeBase === base) {
+        const prevByYear = new Map(incomePoints.map(p => [p.x, p.y]));
+        nextPoints.forEach(p => {
+          if (prevByYear.has(p.x)) p.y = prevByYear.get(p.x);
+        });
+      }
 
       incomePoints = nextPoints;
+      lastIncomeBase = base;
       if (incomeChart) {
         incomeChart.data.datasets[0].data = incomePoints;
         incomeChart.options.scales.x.max = clamp(years, 1, 50);
@@ -1200,13 +1340,34 @@
       updateIncomeProjectionTable();
     }
 
+    function ensureIncomeYAxis(yVal) {
+      if (!incomeChart) return;
+      const yScale = incomeChart.options.scales.y;
+      const currentMax = yScale.max ?? 0;
+      if (yVal > currentMax - 15000) {
+        const nextMax = Math.max(yVal + 15000, currentMax * 1.15, currentMax + 20000);
+        yScale.max = Math.min(2000000, Math.round(nextMax));
+        incomeChart.update("none");
+      }
+    }
+
     function setIncomePoint(index, value) {
-      const clamped = clamp(Math.round(value), 0, 200000);
+      let currentMax = incomeChart?.options?.scales?.y?.max ?? 200000;
+      if (index === 0) {
+        const base = parseMoneyInput(document.getElementById("grossIncome").value);
+        if (Number.isFinite(base)) {
+          currentMax = Math.min(2000000, Math.max(currentMax, Math.round(base * 5)));
+          if (incomeChart) {
+            incomeChart.options.scales.y.max = currentMax;
+          }
+        }
+      }
+      const clamped = clamp(Math.round(value), 0, Math.min(2000000, currentMax));
       incomePoints[index].y = clamped;
 
       if (index === 0) {
         const grossInput = document.getElementById("grossIncome");
-        grossInput.value = clamped;
+        grossInput.value = formatThousands(String(clamped));
         renderIncome();
       }
 
@@ -1254,6 +1415,7 @@
     function handleIncomePointerMove(evt) {
       if (incomeDragIndex == null) return;
       const yVal = incomeChart.scales.y.getValueForPixel(evt.offsetY);
+      ensureIncomeYAxis(yVal);
       setIncomePoint(incomeDragIndex, yVal);
     }
 
@@ -1404,9 +1566,13 @@
     });
     document.getElementById("investPct").addEventListener("input", updateIncomeProjectionTable);
 
-    document.getElementById("grossIncome").addEventListener("input", () => {
+    document.getElementById("grossIncome").addEventListener("input", (event) => {
+      const input = event.target;
+      const formatted = formatThousands(input.value);
+      input.value = formatted;
       renderIncome();
-      if (incomePoints.length) setIncomePoint(0, Number(document.getElementById("grossIncome").value));
+      rebuildIncomeChart();
+      if (incomePoints.length) setIncomePoint(0, parseMoneyInput(formatted));
     });
     document.getElementById("rentMonthly").addEventListener("input", () => {
       renderIncome();
