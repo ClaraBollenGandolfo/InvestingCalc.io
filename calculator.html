@@ -180,6 +180,12 @@
       pointer-events: none;
       overflow: visible;
     }
+    .tabScroll {
+      max-height: calc(100vh - 260px);
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-width: thin;
+    }
     .carouselCard .section { margin-top: 0; padding-top: 0; border-top: 0; }
     .carouselCard .section + .section { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
 
@@ -428,6 +434,7 @@
       <div class="carouselScroll" id="carouselScroll">
         <div class="carouselStage" id="carouselStage">
       <div class="carouselCard" data-step="0">
+        <div class="tabScroll">
         <div class="section">
           <div class="sectionTitle">How this works</div>
           <p class="note" style="font-size: 15px;">
@@ -485,9 +492,11 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="1">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="sectionTitle">Income & monthly budget</div>
           <div class="guide">
@@ -530,9 +539,11 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="2">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="sectionTitle">Insights</div>
           <div class="guide">
@@ -562,9 +573,11 @@
             <div id="incomeDetails" class="out"></div>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="3">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="sectionTitle">Portfolio setup</div>
           <div class="guide">
@@ -590,9 +603,11 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="4">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="sectionTitle">Projected income path</div>
           <div class="guide">
@@ -604,9 +619,11 @@
           </div>
           <div class="incomeChartWrap"><canvas id="incomeChart"></canvas></div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="5">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="sectionTitle">Monthly leftover at each point</div>
           <div class="guide">
@@ -630,9 +647,11 @@
             <button id="applyIncomeToContrib" type="button">Auto-fill contribution schedule</button>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="6">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="sectionTitle">Monthly contribution schedule</div>
           <div class="guide">
@@ -686,9 +705,11 @@
 
           <div id="errors" class="errorBox"></div>
         </div>
+        </div>
       </div>
 
       <div class="carouselCard" data-step="7">
+        <div class="tabScroll">
         <div class="section has-guide">
           <div class="guide">
             Run the model to compare bad, average, and good return paths. Use the chart to sanity‑check
@@ -748,6 +769,7 @@
 
           <div id="output" class="out"></div>
           <div class="chartWrap"><canvas id="chart"></canvas></div>
+        </div>
         </div>
       </div>
     </div>
