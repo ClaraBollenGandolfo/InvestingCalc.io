@@ -31,9 +31,68 @@
         linear-gradient(160deg, var(--bg) 0%, var(--bg-deep) 100%);
       color: var(--ink);
     }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 18px 18px 42px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; box-shadow: 0 18px 40px rgba(31, 38, 34, 0.08); }
-    .appTitle { font-size: 18px; margin: 0 0 12px; font-weight: 700; letter-spacing: 0.2px; }
+    .wrap { max-width: none; width: 100%; margin: 0; padding: 18px 24px 42px; box-sizing: border-box; }
+    .appHeader { padding: 8px 6px 16px; }
+    .appTitle { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: 0.2px; }
+
+    .layout { display: grid; grid-template-columns: 180px 1fr; gap: 18px; align-items: start; }
+    .toc {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      background: rgba(251, 248, 241, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(31, 38, 34, 0.08);
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .toc button {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .toc button.active {
+      color: var(--ink);
+      border-color: var(--border);
+      background: #f7f2e9;
+    }
+
+    .carouselScroll {
+      position: relative;
+    }
+    .carouselStage {
+      position: relative;
+      height: calc(100vh - 120px);
+      min-height: 760px;
+      padding: 12px 6px 36px;
+      position: sticky;
+      top: 24px;
+    }
+    .carouselCard {
+      position: absolute;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(31, 38, 34, 0.08);
+      transition: none;
+      will-change: transform, opacity, filter, left, top, width;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .carouselCard .section { margin-top: 0; padding-top: 0; border-top: 0; }
+    .carouselCard .section + .section { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
 
     .section { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
     .section:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
@@ -107,79 +166,104 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
+    <div class="appHeader">
       <h2 class="appTitle">Investment Growth Projection</h2>
+    </div>
 
-      <!-- INCOME SECTION -->
-      <div class="section">
-        <div class="sectionTitle">Income & monthly budget</div>
-        <div class="tiny">
-          Estimates take-home pay using Income Tax + employee National Insurance (UK 2025/26).
-          Doesn’t include pension, student loan, benefits, etc.
-        </div>
+    <div class="layout">
+      <nav class="toc" id="toc">
+        <button type="button" data-step="0">Income + budget</button>
+        <button type="button" data-step="1">Recompute output</button>
+        <button type="button" data-step="2">Portfolio setup</button>
+        <button type="button" data-step="3">Income path</button>
+        <button type="button" data-step="4">Monthly leftover</button>
+        <button type="button" data-step="5">Contrib + withdrawals</button>
+        <button type="button" data-step="6">Return graph</button>
+      </nav>
 
-        <div class="grid">
-          <div>
-            <label for="grossIncome">Annual gross income</label>
-            <input id="grossIncome" type="number" min="0" step="500" value="60000" />
+      <div class="carouselScroll" id="carouselScroll">
+        <div class="carouselStage" id="carouselStage">
+      <div class="carouselCard" data-step="0">
+        <div class="section">
+          <div class="sectionTitle">Income & monthly budget</div>
+          <div class="tiny">
+            Estimates take-home pay using Income Tax + employee National Insurance (UK 2025/26).
+            Doesn’t include pension, student loan, benefits, etc.
           </div>
-          <div>
-            <label for="taxRegion">Tax region</label>
-            <select id="taxRegion">
-              <option value="rUK" selected>England / Wales / Northern Ireland</option>
-              <option value="SCO">Scotland</option>
-            </select>
+
+          <div class="grid">
+            <div>
+              <label for="grossIncome">Annual gross income</label>
+              <input id="grossIncome" type="number" min="0" step="500" value="60000" />
+            </div>
+            <div>
+              <label for="taxRegion">Tax region</label>
+              <select id="taxRegion">
+                <option value="rUK" selected>England / Wales / Northern Ireland</option>
+                <option value="SCO">Scotland</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div class="grid" style="margin-top:10px;">
-          <div>
-            <label for="rentMonthly">Monthly rent</label>
-            <input id="rentMonthly" type="number" min="0" step="50" value="1500" />
-          </div>
-          <div>
-            <label for="livingMonthly">Monthly living costs</label>
-            <input id="livingMonthly" type="number" min="0" step="50" value="900" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="note">Click to recompute (it also updates as you type).</div>
-          <button id="calcIncome" type="button">Calc net pay</button>
-        </div>
-
-        <div class="panel">
-          <div id="incomeOut" class="out"></div>
-        </div>
-      </div>
-
-      <!-- PORTFOLIO BASICS -->
-      <div class="section">
-        <div class="sectionTitle">Portfolio setup</div>
-        <div class="tiny">Starting pot is your current invested value. Projection is how many years to simulate.</div>
-
-        <div class="grid">
-          <div>
-            <label for="start">Starting pot</label>
-            <input id="start" type="number" min="0" step="100" value="10000" />
-          </div>
-          <div>
-            <label for="years">Projection (years)</label>
-            <input id="years" type="number" min="1" step="1" value="30" />
+          <div class="grid" style="margin-top:10px;">
+            <div>
+              <label for="rentMonthly">Monthly rent</label>
+              <input id="rentMonthly" type="number" min="0" step="50" value="1500" />
+            </div>
+            <div>
+              <label for="livingMonthly">Monthly living costs</label>
+              <input id="livingMonthly" type="number" min="0" step="50" value="900" />
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- INCOME PROJECTION -->
-      <div class="section">
-        <div class="sectionTitle">Projected income path</div>
-        <div class="tiny">
-          Drag the dots (every 5 years) to sketch your future gross salary. The chart runs from 0-200,000 GBP.
-        </div>
-        <div class="incomeChartWrap"><canvas id="incomeChart"></canvas></div>
+      <div class="carouselCard" data-step="1">
+        <div class="section">
+          <div class="sectionTitle">Click to recompute</div>
+          <div class="tiny">Recalculate take-home pay and monthly leftover.</div>
+          <div class="row">
+            <div class="note">Click to recompute (it also updates as you type).</div>
+            <button id="calcIncome" type="button">Calc net pay</button>
+          </div>
 
-        <div class="panel">
-          <div class="sectionTitle" style="margin-bottom: 10px;">Monthly leftover at each point</div>
+          <div class="panel">
+            <div id="incomeOut" class="out"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="carouselCard" data-step="2">
+        <div class="section">
+          <div class="sectionTitle">Portfolio setup</div>
+          <div class="tiny">Starting pot is your current invested value. Projection is how many years to simulate.</div>
+
+          <div class="grid">
+            <div>
+              <label for="start">Starting pot</label>
+              <input id="start" type="number" min="0" step="100" value="10000" />
+            </div>
+            <div>
+              <label for="years">Projection (years)</label>
+              <input id="years" type="number" min="1" step="1" value="30" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="carouselCard" data-step="3">
+        <div class="section">
+          <div class="sectionTitle">Projected income path</div>
+          <div class="tiny">
+            Drag the dots (every 5 years) to sketch your future gross salary. The chart runs from 0-200,000 GBP.
+          </div>
+          <div class="incomeChartWrap"><canvas id="incomeChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="carouselCard" data-step="4">
+        <div class="section">
+          <div class="sectionTitle">Monthly leftover at each point</div>
           <table>
             <thead>
               <tr>
@@ -198,64 +282,66 @@
         </div>
       </div>
 
-      <!-- CONTRIBUTIONS -->
-      <div class="section">
-        <div class="sectionTitle">Monthly contribution schedule</div>
-        <div class="tiny">Ranges are <b>start-inclusive</b>, <b>end-exclusive</b>. Later rows override earlier rows if they overlap.</div>
+      <div class="carouselCard" data-step="5">
+        <div class="section">
+          <div class="sectionTitle">Monthly contribution schedule</div>
+          <div class="tiny">Ranges are <b>start-inclusive</b>, <b>end-exclusive</b>. Later rows override earlier rows if they overlap.</div>
 
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 20%;">From year</th>
-              <th style="width: 20%;">To year</th>
-              <th>Monthly contribution</th>
-              <th style="width: 120px;"></th>
-            </tr>
-          </thead>
-          <tbody id="schedBody"></tbody>
-        </table>
-      </div>
-
-      <!-- WITHDRAWALS -->
-      <div class="section">
-        <div class="sectionTitle">Lump sum withdrawals</div>
-        <div class="tiny">
-          Enter a year (whole number). Withdrawal is applied at the <b>end of that year</b>.
-          Amount is positive (money removed).
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">From year</th>
+                <th style="width: 20%;">To year</th>
+                <th>Monthly contribution</th>
+                <th style="width: 120px;"></th>
+              </tr>
+            </thead>
+            <tbody id="schedBody"></tbody>
+          </table>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 20%;">Year</th>
-              <th>Withdrawal amount</th>
-              <th style="width: 120px;"></th>
-            </tr>
-          </thead>
-          <tbody id="wBody"></tbody>
-        </table>
-
-        <div id="errors" class="errorBox"></div>
-      </div>
-
-      <!-- ACTIONS + OUTPUT -->
-      <div class="section">
-        <div class="row">
-          <div class="note">
-            Assumed annual returns: <b>Bad 3%</b>, <b>Average 7%</b>, <b>Good 10%</b>.
-            Monthly compounding. Plot shows yearly points for speed.
+        <div class="section">
+          <div class="sectionTitle">Lump sum withdrawals</div>
+          <div class="tiny">
+            Enter a year (whole number). Withdrawal is applied at the <b>end of that year</b>.
+            Amount is positive (money removed).
           </div>
-          <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
-            <button id="addRow" class="secondary" type="button">Add contrib row</button>
-            <button id="addW" class="secondary" type="button">Add withdrawal</button>
-            <button id="run" type="button">Run</button>
-          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">Year</th>
+                <th>Withdrawal amount</th>
+                <th style="width: 120px;"></th>
+              </tr>
+            </thead>
+            <tbody id="wBody"></tbody>
+          </table>
+
+          <div id="errors" class="errorBox"></div>
         </div>
-
-        <div id="output" class="out"></div>
-        <div class="chartWrap"><canvas id="chart"></canvas></div>
       </div>
 
+      <div class="carouselCard" data-step="6">
+        <div class="section">
+          <div class="row">
+            <div class="note">
+              Assumed annual returns: <b>Bad 3%</b>, <b>Average 7%</b>, <b>Good 10%</b>.
+              Monthly compounding. Plot shows yearly points for speed.
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+              <button id="addRow" class="secondary" type="button">Add contrib row</button>
+              <button id="addW" class="secondary" type="button">Add withdrawal</button>
+              <button id="run" type="button">Run</button>
+            </div>
+          </div>
+
+          <div id="output" class="out"></div>
+          <div class="chartWrap"><canvas id="chart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -538,12 +624,105 @@
     const rootStyles = getComputedStyle(document.documentElement);
     const chartText = rootStyles.getPropertyValue("--chart-text").trim() || "#1f2622";
     const chartTextMuted = rootStyles.getPropertyValue("--chart-text-muted").trim() || "#5a635e";
+    const carouselCards = [...document.querySelectorAll(".carouselCard")];
+    const carouselScroll = document.getElementById("carouselScroll");
+    const carouselStage = document.getElementById("carouselStage");
+    const tocButtons = [...document.querySelectorAll("#toc button")];
     const incomeYears = [0, 5, 10, 15, 20, 25, 30];
     const incomeBody = document.getElementById("incomeProjectionBody");
     const incomeCanvas = document.getElementById("incomeChart");
     let incomeChart = null;
     let incomePoints = [];
     let incomeDragIndex = null;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function renderCarousel(progress) {
+      const rect = carouselStage.getBoundingClientRect();
+      const stageW = rect.width;
+      const stageH = rect.height;
+
+      const center = { left: 0.14 * stageW, top: 60, width: 0.72 * stageW, opacity: 1, blur: 0, z: 3 };
+      const prev = { left: 0, top: 0, width: 0.64 * stageW, opacity: 0.45, blur: 0.6, z: 1 };
+      const next = { left: 0.46 * stageW, top: stageH * 0.52, width: 0.54 * stageW, opacity: 0.45, blur: 0.6, z: 2 };
+
+      carouselCards.forEach((card, idx) => {
+        const offset = idx - progress;
+        if (Math.abs(offset) > 1.2) {
+          card.style.opacity = "0";
+          card.style.pointerEvents = "none";
+          return;
+        }
+
+        let from = center;
+        let to = center;
+        let t = 0;
+
+        if (offset <= 0) {
+          from = prev;
+          to = center;
+          t = clamp(offset + 1, 0, 1);
+        } else {
+          from = center;
+          to = next;
+          t = clamp(offset, 0, 1);
+        }
+
+        const left = lerp(from.left, to.left, t);
+        const top = lerp(from.top, to.top, t);
+        const width = lerp(from.width, to.width, t);
+        const opacity = lerp(from.opacity, to.opacity, t);
+        const blur = lerp(from.blur, to.blur, t);
+        const z = offset < 0 ? 1 : 2;
+
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+        card.style.width = `${width}px`;
+        card.style.opacity = opacity.toFixed(3);
+        card.style.filter = `blur(${blur.toFixed(2)}px)`;
+        card.style.zIndex = offset === 0 ? "3" : String(z);
+        card.style.pointerEvents = Math.abs(offset) < 0.15 ? "auto" : "none";
+      });
+
+      const activeIdx = Math.round(progress);
+      tocButtons.forEach((btn) => {
+        btn.classList.toggle("active", Number(btn.dataset.step) === activeIdx);
+      });
+    }
+
+    function updateCarouselScrollHeight() {
+      carouselScroll.style.height = `${carouselCards.length * 80}vh`;
+    }
+
+    function scrollToCarouselIndex(index) {
+      const rect = carouselScroll.getBoundingClientRect();
+      const usable = rect.height - window.innerHeight;
+      if (usable <= 0) return;
+      const start = carouselScroll.offsetTop;
+      const target = start + (usable * (index / (carouselCards.length - 1)));
+      window.scrollTo({ top: target, behavior: "smooth" });
+    }
+
+    let scrollTicking = false;
+    function handleScroll() {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => {
+        const rect = carouselScroll.getBoundingClientRect();
+        const usable = rect.height - window.innerHeight;
+        if (usable > 0) {
+          const start = carouselScroll.offsetTop;
+          const progress = clamp((window.scrollY - start) / usable, 0, 1);
+          let indexProgress = progress * (carouselCards.length - 1);
+          const snapped = Math.round(indexProgress);
+          if (Math.abs(indexProgress - snapped) < 0.12) {
+            indexProgress = snapped;
+          }
+          renderCarousel(indexProgress);
+        }
+        scrollTicking = false;
+      });
+    }
 
     function seedIncomePoints(base) {
       return incomeYears.map((y) => ({
@@ -822,7 +1001,6 @@
     incomeCanvas.addEventListener("pointerup", handleIncomePointerUp);
     incomeCanvas.addEventListener("pointerleave", handleIncomePointerUp);
     document.getElementById("applyIncomeToContrib").addEventListener("click", applyIncomeToContribSchedule);
-
     // Defaults
     addContribRow(0, 3, 800);
     addContribRow(3, 10, 1100);
@@ -835,6 +1013,18 @@
     initIncomeChart();
     validateUI();
     run();
+    updateCarouselScrollHeight();
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", () => {
+      updateCarouselScrollHeight();
+      handleScroll();
+    });
+    tocButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        scrollToCarouselIndex(Number(btn.dataset.step));
+      });
+    });
   </script>
 </body>
 </html>
