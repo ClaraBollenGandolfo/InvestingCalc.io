@@ -190,6 +190,7 @@
     .tiny { font-size: 12px; color: var(--muted); margin: 0 0 8px; line-height: 1.35; }
 
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid.triple { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
     input, select {
       width: 100%;
@@ -450,16 +451,20 @@
           </div>
           <div class="tiny">Starting pot is your current invested value. Projection is how many years to simulate.</div>
 
-          <div class="grid">
+          <div class="grid triple">
             <div>
-            <label for="start">Starting pot</label>
-            <span class="moneyFieldWrap">
-              <input id="start" type="number" min="0" step="100" value="10000" />
-            </span>
+              <label for="start">Starting pot</label>
+              <span class="moneyFieldWrap">
+                <input id="start" type="number" min="0" step="100" value="10000" />
+              </span>
             </div>
             <div>
               <label for="years">Projection (years)</label>
-              <input id="years" type="number" min="1" step="1" value="30" />
+              <input id="years" type="number" min="1" max="50" step="1" value="30" />
+            </div>
+            <div>
+              <label for="investPct">Percent of leftover to invest</label>
+              <input id="investPct" type="number" min="0" max="100" step="1" value="50" />
             </div>
           </div>
         </div>
@@ -493,6 +498,7 @@
                 <th>Gross annual</th>
                 <th>Net monthly</th>
                 <th>Leftover monthly</th>
+                <th>Investable monthly (<span id="investPctLabel">50%</span> of leftover)</th>
               </tr>
             </thead>
             <tbody id="incomeProjectionBody"></tbody>
@@ -829,7 +835,7 @@
       contribRows.forEach(r => r.tr.classList.remove("badRow"));
       wRows.forEach(r => r.tr.classList.remove("badRow"));
 
-      if (!Number.isFinite(years) || years < 1 || years > 80) errors.push(`Projection years must be between 1 and 80.`);
+      if (!Number.isFinite(years) || years < 1 || years > 50) errors.push(`Projection years must be between 1 and 50.`);
       if (contribRows.length === 0) errors.push("Add at least one contribution schedule row.");
 
       contribRows.forEach((r, idx) => {
@@ -930,7 +936,6 @@
     const carouselScroll = document.getElementById("carouselScroll");
     const carouselStage = document.getElementById("carouselStage");
     const tocButtons = [...document.querySelectorAll("#toc button")];
-    const incomeYears = [0, 5, 10, 15, 20, 25, 30];
     const incomeBody = document.getElementById("incomeProjectionBody");
     const incomeCanvas = document.getElementById("incomeChart");
     let incomeChart = null;
@@ -1043,17 +1048,33 @@
       }, 100);
     }
 
-    function seedIncomePoints(base) {
-      return incomeYears.map((y) => ({
+    function buildIncomeYears(maxYears) {
+      const years = [];
+      const cap = clamp(Math.round(maxYears || 30), 1, 50);
+      for (let y = 0; y < cap; y += 5) years.push(y);
+      if (years[years.length - 1] !== cap) years.push(cap);
+      return years;
+    }
+
+    function seedIncomePoints(base, maxYears) {
+      const years = buildIncomeYears(maxYears);
+      const cap = Math.max(0, Math.round(base * 2));
+      return years.map((y) => ({
         x: y,
-        y: clamp(Math.round(base * Math.pow(1.03, y)), 0, 200000)
+        y: clamp(Math.round(base * Math.pow(1.03, y)), 0, cap)
       }));
     }
 
     function updateIncomeProjectionTable() {
       const rent = Number(document.getElementById("rentMonthly").value);
       const living = Number(document.getElementById("livingMonthly").value);
+      const investPct = Number(document.getElementById("investPct").value);
       const expensesMonthly = rent + living;
+      const investLabel = document.getElementById("investPctLabel");
+      if (investLabel) {
+        const pct = Number.isFinite(investPct) ? clamp(Math.round(investPct), 0, 100) : 0;
+        investLabel.textContent = `${pct}%`;
+      }
 
       incomeBody.innerHTML = "";
 
@@ -1061,6 +1082,7 @@
         const { net } = calcNetIncome(p.y, document.getElementById("taxRegion").value);
         const netMonthly = net / 12;
         const leftover = netMonthly - expensesMonthly;
+        const investable = leftover * (Number.isFinite(investPct) ? investPct / 100 : 0);
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -1068,6 +1090,7 @@
           <td>${fmtMoney(p.y)}</td>
           <td>${fmtMoney(netMonthly)}</td>
           <td>${fmtMoney(leftover)}</td>
+          <td>${fmtMoney(investable)}</td>
         `;
         incomeBody.appendChild(row);
       });
@@ -1075,7 +1098,9 @@
 
     function initIncomeChart() {
       const base = Number(document.getElementById("grossIncome").value) || 60000;
-      incomePoints = seedIncomePoints(base);
+      const years = Math.floor(Number(document.getElementById("years").value) || 30);
+      incomePoints = seedIncomePoints(base, years);
+      const yMax = Math.max(1, Math.round(base * 5));
 
       incomeChart = new Chart(incomeCanvas, {
         type: "line",
@@ -1103,13 +1128,13 @@
             x: {
               type: "linear",
               min: 0,
-              max: 30,
+              max: clamp(years, 1, 50),
               ticks: { color: chartTextMuted, stepSize: 5 },
               title: { display: true, text: "Years", color: chartText }
             },
             y: {
               min: 0,
-              max: 200000,
+              max: yMax,
               ticks: { color: chartTextMuted, callback: (v) => fmtMoney(v) },
               title: { display: true, text: "Gross annual income (GBP)", color: chartText }
             }
@@ -1117,6 +1142,27 @@
         }
       });
 
+      updateIncomeProjectionTable();
+    }
+
+    function rebuildIncomeChart() {
+      const base = Number(document.getElementById("grossIncome").value) || 60000;
+      const years = Math.floor(Number(document.getElementById("years").value) || 30);
+      const nextPoints = seedIncomePoints(base, years);
+      const yMax = Math.max(1, Math.round(base * 5));
+
+      const prevByYear = new Map(incomePoints.map(p => [p.x, p.y]));
+      nextPoints.forEach(p => {
+        if (prevByYear.has(p.x)) p.y = prevByYear.get(p.x);
+      });
+
+      incomePoints = nextPoints;
+      if (incomeChart) {
+        incomeChart.data.datasets[0].data = incomePoints;
+        incomeChart.options.scales.x.max = clamp(years, 1, 50);
+        incomeChart.options.scales.y.max = yMax;
+        incomeChart.update("none");
+      }
       updateIncomeProjectionTable();
     }
 
@@ -1139,8 +1185,11 @@
     function monthlyLeftoverForGross(grossAnnual) {
       const rent = Number(document.getElementById("rentMonthly").value);
       const living = Number(document.getElementById("livingMonthly").value);
+      const investPct = Number(document.getElementById("investPct").value);
       const { net } = calcNetIncome(grossAnnual, document.getElementById("taxRegion").value);
-      return (net / 12) - (rent + living);
+      const leftover = (net / 12) - (rent + living);
+      const pct = Number.isFinite(investPct) ? investPct / 100 : 0;
+      return leftover * pct;
     }
 
     function applyIncomeToContribSchedule() {
@@ -1311,7 +1360,12 @@
     });
 
     document.getElementById("run").addEventListener("click", run);
-    document.getElementById("years").addEventListener("input", validateUI);
+    document.getElementById("years").addEventListener("input", () => {
+      validateUI();
+      rebuildIncomeChart();
+      run();
+    });
+    document.getElementById("investPct").addEventListener("input", updateIncomeProjectionTable);
 
     document.getElementById("grossIncome").addEventListener("input", () => {
       renderIncome();
